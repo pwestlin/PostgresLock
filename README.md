@@ -1,4 +1,4 @@
-# Postgres built-in functions får locking.
+# Postgres built-in functions for locking.
 
 ## Tech stack
 * Kotlin
