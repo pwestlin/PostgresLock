@@ -1,12 +1,14 @@
+@file:Suppress("unused")
+
 package nu.westlin.postgreslock
 
-import nu.westlin.postgreslock.gdl.GdlService
+import nu.westlin.postgreslock.surval.korSurval
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.getBean
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.queryForObject
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Repository
 import org.springframework.stereotype.Service
@@ -18,27 +20,14 @@ import java.time.Instant
 @SpringBootApplication
 class PostgresLockApplication
 
-private val logger: Logger = LoggerFactory.getLogger("Foo")
+val logger: Logger = LoggerFactory.getLogger("Foo")
 
 fun main(args: Array<String>) {
     val ctx = runApplication<PostgresLockApplication>(*args)
 
-    // "Starta" tre GDL:er (för prestanda och redundans och för att minst en alltid ska vara igång i OpenShift).
-    // Observera att endast en GDL får bearbeta ej behandlade förändringsärenden!
-    val gdlService = ctx.getBean<GdlService>()
-    repeat(3) {
-        Thread.startVirtualThread {
-            gdlService.behandlaEjBehandladeForandringsarenden()
-        }
-    }
-    // Läs behandlade förändringsärenden parallellt. Detta görs för att visa att vi får läsa (men inte skriva) parallellt.
-    repeat(2) {
-        Thread.startVirtualThread {
-            repeat(10) {
-                logger.info("Behandlade: ${gdlService.allaBehandladeForandringsarenden().map { it.dataleveransidentitet }}")
-                Thread.sleep(1000)
-            }
-        }
+    with(ctx) {
+        korSurval()
+        //korGdl()
     }
 
     /*
@@ -93,9 +82,8 @@ class ExclusiveWriterService(
 
     @Transactional
     fun tryWriteExclusively(): Boolean {
-        val gotLock: Boolean = jdbcTemplate.queryForObject(
+        val gotLock: Boolean = jdbcTemplate.queryForObject<Boolean>(
             "select pg_try_advisory_xact_lock(?)",
-            Boolean::class.java,
             lockKey
         ) ?: false
 

@@ -1,9 +1,12 @@
-@file:Suppress("JpaQueryApiInspection")
+@file:Suppress("JpaQueryApiInspection", "unused")
 
 package nu.westlin.postgreslock.gdl
 
+import nu.westlin.postgreslock.logger
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.getBean
+import org.springframework.context.ApplicationContext
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Repository
 import org.springframework.stereotype.Service
@@ -16,6 +19,27 @@ import java.sql.Timestamp
 import java.time.Duration
 import java.time.Instant
 import java.util.*
+
+context(ctx: ApplicationContext)
+fun korGdl() {
+    // "Starta" tre GDL:er (för prestanda och redundans och för att minst en alltid ska vara igång i OpenShift).
+    // Observera att endast en GDL får bearbeta ej behandlade förändringsärenden!
+    val gdlService = ctx.getBean<GdlService>()
+    repeat(3) {
+        Thread.startVirtualThread {
+            gdlService.behandlaEjBehandladeForandringsarenden()
+        }
+    }
+    // Läs behandlade förändringsärenden parallellt. Detta görs för att visa att vi får läsa (men inte skriva) parallellt.
+    repeat(2) {
+        Thread.startVirtualThread {
+            repeat(10) {
+                logger.info("Behandlade: ${gdlService.allaBehandladeForandringsarenden().map { it.dataleveransidentitet }}")
+                Thread.sleep(1000)
+            }
+        }
+    }
+}
 
 @Service
 class GdlService(
