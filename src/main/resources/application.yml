@@ -1,0 +1,8 @@
+spring:
+  application.name: PostgresLock
+  docker:
+    compose:
+      lifecycle-management: start_only
+  sql:
+    init:
+      mode: always
