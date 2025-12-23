@@ -42,6 +42,8 @@ class SurvalService(
 
         // Simulera arbete
         Thread.sleep(Duration.ofSeconds(2))
+        // Någon som vet vad defaultvärdena för transaction timeout och read timeout i Spring/Postgres är?
+        //Thread.sleep(Duration.ofSeconds(200))
         jobbRepository.klarmarkera(id = jobb.id,klartidpunkt = Instant.now())
         logger.info("Jobb ${jobb.id} klart")
     }
@@ -56,7 +58,7 @@ class SurvalJobbRepository(
     @Transactional(propagation = Propagation.MANDATORY)
     fun aldstaEjBehandlade(): SurvalJobb? = jdbcClient
         // pevest: Visa med och utan "skip locked"
-        .sql("select id,status from surval_jobb where klartidpunkt is null order by mottagentidpunkt asc limit 1 for update skip locked")
+        .sql("select id,status from surval_jobb where klartidpunkt is null order by mottagentidpunkt asc limit 1 for update /*skip locked*/")
         .query {rs, _ ->
             SurvalJobb(
                 id = UUID.fromString(rs.getString("id")),
