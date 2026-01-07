@@ -2,6 +2,7 @@
 
 package nu.westlin.postgreslock
 
+import nu.westlin.postgreslock.gdl.korGdl
 import nu.westlin.postgreslock.surval.korSurval
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -27,19 +28,8 @@ fun main(args: Array<String>) {
 
     with(ctx) {
         korSurval()
-        //korGdl()
+        korGdl()
     }
-
-    /*
-        val service = ctx.getBean<ExclusiveWriterService>()
-        repeat(100) {
-            Thread.startVirtualThread {
-                logger.info("${service.tryWriteExclusively()}")
-            }
-        }
-    */
-
-    //ctx.getBean<JobbService>().bearbetaJobb()
 }
 
 @Service

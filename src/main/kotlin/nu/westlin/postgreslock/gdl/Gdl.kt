@@ -58,7 +58,7 @@ class GdlService(
             return
         }
         logger.info("Fick låset! :D")
-        logger.info("Testar at ta låset igen i samma tx: ${lockRepository.lock()}")
+        logger.info("Testar att ta låset igen i samma tx bara för att jag är en tjomme: ${lockRepository.lock()}")
 
         forandringsarendeRepository.ejBehandlade().forEach { forandringsarende ->
             TransactionTemplate(transactionManager).apply {

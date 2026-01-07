@@ -57,8 +57,8 @@ class SurvalJobbRepository(
     @Suppress("SqlRedundantOrderingDirection")
     @Transactional(propagation = Propagation.MANDATORY)
     fun aldstaEjBehandlade(): SurvalJobb? = jdbcClient
-        // pevest: Visa med och utan "skip locked"
-        .sql("select id,status from surval_jobb where klartidpunkt is null order by mottagentidpunkt asc limit 1 for update /*skip locked*/")
+        // TODO pevest: Visa med och utan "skip locked"
+        .sql("select id,status from surval_jobb where klartidpunkt is null order by mottagentidpunkt asc limit 1 for update skip locked")
         .query {rs, _ ->
             SurvalJobb(
                 id = UUID.fromString(rs.getString("id")),
